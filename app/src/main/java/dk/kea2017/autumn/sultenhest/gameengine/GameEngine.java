@@ -1,22 +1,39 @@
 package dk.kea2017.autumn.sultenhest.gameengine;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GameEngine extends Activity implements Runnable
+public abstract class GameEngine extends Activity implements Runnable, SensorEventListener
 {
     private Screen screen;
     private Canvas canvas;
+    private Bitmap virtualScreen;
+    Rect src = new Rect();
+    Rect dst = new Rect();
+
+    private TouchHandler touchHandler;
+    private TouchEventPool touchEventPool = new TouchEventPool();
+    private List<TouchEvent> touchEventBuffer = new ArrayList<>();
+
+    private float[] accelerometer = new float[3];
 
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
@@ -38,6 +55,50 @@ public abstract class GameEngine extends Activity implements Runnable
         surfaceHolder = surfaceView.getHolder();
 
         screen = createStartScreen();
+
+        if(surfaceView.getWidth() > surfaceView.getHeight())
+        {
+            setVirtualScreen(480, 320);
+        }
+        else
+        {
+            setVirtualScreen(320, 480);
+        }
+        touchHandler = new MultiTouchHandler(surfaceView, touchEventBuffer, touchEventPool);
+
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() != 0)
+        {
+            Sensor accelerometer = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        }
+    }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy)
+    {
+
+    }
+
+    public void onSensorChanged(SensorEvent event)
+    {
+        System.arraycopy(event.values, 0, accelerometer, 0, 3);
+    }
+
+    public void setVirtualScreen(int width, int height)
+    {
+        if(virtualScreen != null) virtualScreen.recycle();
+        virtualScreen = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        canvas = new Canvas(virtualScreen);
+    }
+
+    public int getFrameBufferWidth()
+    {
+        return virtualScreen.getWidth();
+    }
+    public int getFrameBufferHeight()
+    {
+        return virtualScreen.getHeight();
     }
 
     public abstract Screen createStartScreen();
@@ -53,7 +114,34 @@ public abstract class GameEngine extends Activity implements Runnable
 
     public Bitmap loadBitmap(String filename)
     {
-        return null;
+        InputStream in = null;
+        Bitmap bitmap;
+
+        try
+        {
+            in = getAssets().open(filename);
+            bitmap = BitmapFactory.decodeStream(in);
+            if(bitmap == null)
+            {
+                throw new RuntimeException("*** Could not find graphics:" + filename);
+            }
+            return bitmap;
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException("*** Could not open graphics: " + filename);
+        }
+        finally
+        {
+            if(in != null)
+            {
+                try
+                {
+                    in.close();
+                }
+                catch(IOException e){}
+            }
+        }
     }
     //public Music loadMusic(String filename) { return null; }
     //public Sound loadSound(String filename) { return null; }
@@ -62,29 +150,52 @@ public abstract class GameEngine extends Activity implements Runnable
     {
         canvas.drawColor(color);
     }
-    public int getFrameBufferWidth() { return 0; }
-    public int getFrameBufferHeight()
+    public void drawBitmap(Bitmap bitmap, int x, int y)
     {
-        return 0;
+        if(canvas != null) canvas.drawBitmap(bitmap, x, y, null);
     }
-    public void drawBitmap(Bitmap bitmap, int x, int y) {}
-    public void drawBitmap(Bitmap bitmap, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight) {}
+
+    public void drawBitmap(Bitmap bitmap, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight)
+    {
+        Rect src = new Rect();
+        Rect dst = new Rect();
+        if(canvas == null) return;
+
+        src.left = srcX;
+        src.top = srcY;
+        src.right = srcX + srcWidth;
+        src.bottom = srcY + srcHeight;
+
+        dst.left = x;
+        dst.top = y;
+        dst.right = x + srcWidth;
+        dst.bottom = y + srcHeight;
+
+        canvas.drawBitmap(bitmap, src, dst, null);
+    }
 
     public boolean isTouchDown(int pointer)
     {
-        return false;
+        return touchHandler.isTouchDown(pointer);
     }
     public int getTouchX(int pointer)
     {
-        return 0;
+        int virtualX = 0;
+        virtualX = (int) ((float) touchHandler.getTouchX(pointer) / (float) surfaceView.getWidth() * virtualScreen.getWidth());
+        return virtualX;
     }
     public int getTouchY(int pointer)
     {
-        return 0;
+        int virtualY = 0;
+        virtualY = (int) ((float) touchHandler.getTouchY(pointer) / (float) surfaceView.getHeight() * virtualScreen.getHeight());
+        return virtualY;
     }
 
     //public List<TouchEvent> getTouchEvents() { return null; }
-    public float[] getAccelerometer(){ return null; }
+    public float[] getAccelerometer()
+    {
+        return accelerometer;
+    }
 
     public void onPause()
     {
@@ -107,6 +218,11 @@ public abstract class GameEngine extends Activity implements Runnable
         catch(Exception e)
         {
             Log.d("GameEngine", "something went wrong");
+        }
+
+        if(isFinishing())
+        {
+            ((SensorManager) getSystemService(Context.SENSOR_SERVICE)).unregisterListener(this);
         }
     }
 
@@ -170,13 +286,23 @@ public abstract class GameEngine extends Activity implements Runnable
                 {
                     continue;
                 }
-                canvas = surfaceHolder.lockCanvas();
+                Canvas canvas = surfaceHolder.lockCanvas();
                 //now we can do all the drawing stuff
-                //canvas.drawColor(Color.RED);
-                if(screen != null )
-                {
-                    screen.update(0);
-                }
+                if(screen != null ) screen.update(0);
+                //after the screen has made all game objects to the virtualScreen we need to copy
+                //and resize the virtualScreen to the actual physical surfaceView
+                src.left = 0;
+                src.top = 0;
+                src.right = virtualScreen.getWidth() - 1;
+                src.bottom = virtualScreen.getHeight() - 1;
+
+                dst.left = 0;
+                dst.top = 0;
+                dst.right = surfaceView.getWidth();
+                dst.bottom = surfaceView.getHeight();
+
+                canvas.drawBitmap(virtualScreen, src, dst, null);
+
                 surfaceHolder.unlockCanvasAndPost(canvas);
             }
         }
