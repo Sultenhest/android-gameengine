@@ -2,7 +2,10 @@ package dk.kea2017.autumn.sultenhest.gameengine;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.text.method.Touch;
 import android.util.Log;
+
+import java.util.List;
 
 public class TestScreen extends Screen
 {
@@ -19,16 +22,28 @@ public class TestScreen extends Screen
     @Override
     public void update(float deltaTime)
     {
-        gameEngine.clearFrameBuffer(Color.BLUE);
+        gameEngine.clearFrameBuffer(Color.RED);
         //gameEngine.drawBitmap(bob, 10, 10);
         //gameEngine.drawBitmap(bob, 100, 200, 0, 0, 64, 64);
 
+        /*
         for( int pointer = 0; pointer < 5; pointer++ )
         {
             if( gameEngine.isTouchDown(pointer) )
             {
                 gameEngine.drawBitmap(sose, gameEngine.getTouchX(pointer), gameEngine.getTouchY(pointer));
             }
+        }
+        */
+
+        List<TouchEvent> touchEvents = gameEngine.getTouchEvents();
+        int stop = touchEvents.size();
+        TouchEvent event = null;
+        for(int i = 0; i < stop; i++)
+        {
+            event = touchEvents.get(i);
+            Log.d("TestScreen", "*** Event touch type: " + event.type + ", x: " + event.x + ", y: " + event.y);
+            gameEngine.drawBitmap(sose, event.x, event.y);
         }
 
         float accX = gameEngine.getAccelerometer()[0];

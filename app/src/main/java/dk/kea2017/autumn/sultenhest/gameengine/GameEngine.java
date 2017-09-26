@@ -32,6 +32,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     private TouchHandler touchHandler;
     private TouchEventPool touchEventPool = new TouchEventPool();
     private List<TouchEvent> touchEventBuffer = new ArrayList<>();
+    private List<TouchEvent> touchEventCopied = new ArrayList<>();
 
     private float[] accelerometer = new float[3];
 
@@ -83,6 +84,43 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     public void onSensorChanged(SensorEvent event)
     {
         System.arraycopy(event.values, 0, accelerometer, 0, 3);
+        accelerometer[0] = -1.0f * accelerometer[0];
+    }
+
+    public float[] getAccelerometer()
+    {
+        return accelerometer;
+    }
+
+    private void fillEvents()
+    {
+        synchronized(touchEventBuffer)
+        {
+            int stop = touchEventBuffer.size();
+            for(int i = 0; i < stop; i++)
+            {
+                touchEventCopied.add(touchEventBuffer.get(i)); //copy all objects from one list to the other
+            }
+            touchEventBuffer.clear();
+        }
+    }
+
+    private void freeEvents()
+    {
+        synchronized(touchEventCopied)
+        {
+            int stop = touchEventCopied.size();
+            for(int i = 0; i < stop; i++)
+            {
+                touchEventPool.free(touchEventCopied.get(i)); //return all used objects to the free pool
+            }
+            touchEventCopied.clear();
+        }
+    }
+
+    public List<TouchEvent> getTouchEvents()
+    {
+        return touchEventCopied;
     }
 
     public void setVirtualScreen(int width, int height)
@@ -192,10 +230,6 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     }
 
     //public List<TouchEvent> getTouchEvents() { return null; }
-    public float[] getAccelerometer()
-    {
-        return accelerometer;
-    }
 
     public void onPause()
     {
@@ -288,7 +322,9 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
                 }
                 Canvas canvas = surfaceHolder.lockCanvas();
                 //now we can do all the drawing stuff
+                fillEvents();
                 if(screen != null ) screen.update(0);
+                freeEvents();
                 //after the screen has made all game objects to the virtualScreen we need to copy
                 //and resize the virtualScreen to the actual physical surfaceView
                 src.left = 0;
