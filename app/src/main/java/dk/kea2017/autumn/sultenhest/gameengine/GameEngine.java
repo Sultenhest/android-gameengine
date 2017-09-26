@@ -76,10 +76,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         }
     }
 
-    public void onAccuracyChanged(Sensor sensor, int accuracy)
-    {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     public void onSensorChanged(SensorEvent event)
     {
