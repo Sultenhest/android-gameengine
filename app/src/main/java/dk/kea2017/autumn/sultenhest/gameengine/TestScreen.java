@@ -2,7 +2,6 @@ package dk.kea2017.autumn.sultenhest.gameengine;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.text.method.Touch;
 import android.util.Log;
 
 import java.util.List;
@@ -11,6 +10,7 @@ public class TestScreen extends Screen
 {
     Bitmap bob = null;
     Bitmap sose = null;
+    TouchEvent event = null;
 
     public TestScreen(GameEngine gameEngine)
     {
@@ -38,14 +38,20 @@ public class TestScreen extends Screen
 
         List<TouchEvent> touchEvents = gameEngine.getTouchEvents();
         int stop = touchEvents.size();
-        TouchEvent event = null;
+
+        if(stop == 0 && event != null)
+        {
+            gameEngine.drawBitmap(sose, gameEngine.getTouchX(event.pointer), gameEngine.getTouchY(event.pointer));
+        }
+
         for(int i = 0; i < stop; i++)
         {
             event = touchEvents.get(i);
-            Log.d("TestScreen", "*** Event touch type: " + event.type + ", x: " + event.x + ", y: " + event.y);
-            gameEngine.drawBitmap(sose, event.x, event.y);
+            //Log.d("TestScreen", "*** Event touch type: " + event.type + ", x: " + event.x + ", y: " + event.y);
+            gameEngine.drawBitmap(sose, gameEngine.getTouchX(event.pointer), gameEngine.getTouchY(event.pointer));
         }
 
+        /*
         float accX = gameEngine.getAccelerometer()[0];
         float accY = gameEngine.getAccelerometer()[1];
         //accX = 0; accY = 0;
@@ -53,6 +59,7 @@ public class TestScreen extends Screen
         float y    = gameEngine.getFrameBufferHeight() / 2 + (accY/10) * gameEngine.getFrameBufferHeight();
 
         gameEngine.drawBitmap(sose, (int) (x - (sose.getWidth()/2)), (int) (y - (sose.getHeight()/2)));
+        */
 
     }
 

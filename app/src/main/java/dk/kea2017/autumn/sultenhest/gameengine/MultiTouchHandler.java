@@ -83,7 +83,7 @@ public class MultiTouchHandler implements TouchHandler, View.OnTouchListener
                 break;
         }
 
-        return false;
+        return true; //telling android i did handle this onTouch event
     }
 
     @Override
