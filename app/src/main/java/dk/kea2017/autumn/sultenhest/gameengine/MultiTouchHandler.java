@@ -1,6 +1,5 @@
 package dk.kea2017.autumn.sultenhest.gameengine;
 
-import android.text.method.Touch;
 import android.view.MotionEvent;
 import android.view.View;
 import java.util.List;

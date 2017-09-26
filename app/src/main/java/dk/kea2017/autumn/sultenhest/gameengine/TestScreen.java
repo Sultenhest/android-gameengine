@@ -11,12 +11,14 @@ public class TestScreen extends Screen
     Bitmap bob = null;
     Bitmap sose = null;
     TouchEvent event = null;
+    Sound sound = null;
 
     public TestScreen(GameEngine gameEngine)
     {
         super(gameEngine);
         bob = gameEngine.loadBitmap("bob.png");
         sose = gameEngine.loadBitmap("sose.png");
+        sound = gameEngine.loadSound("blocksplosion.wav");
     }
 
     @Override
@@ -49,6 +51,10 @@ public class TestScreen extends Screen
             event = touchEvents.get(i);
             //Log.d("TestScreen", "*** Event touch type: " + event.type + ", x: " + event.x + ", y: " + event.y);
             gameEngine.drawBitmap(sose, gameEngine.getTouchX(event.pointer), gameEngine.getTouchY(event.pointer));
+            if(event.type == TouchEvent.TouchEventType.Down)
+            {
+                sound.play(1);
+            }
         }
 
         /*

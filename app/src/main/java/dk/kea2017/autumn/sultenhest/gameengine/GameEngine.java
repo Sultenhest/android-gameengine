@@ -2,6 +2,7 @@ package dk.kea2017.autumn.sultenhest.gameengine;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -10,6 +11,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -28,6 +32,8 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     private Bitmap virtualScreen;
     Rect src = new Rect();
     Rect dst = new Rect();
+
+    private SoundPool soundPool;
 
     private TouchHandler touchHandler;
     private TouchEventPool touchEventPool = new TouchEventPool();
@@ -55,6 +61,28 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         setContentView(surfaceView);
         surfaceHolder = surfaceView.getHolder();
 
+        touchHandler = new MultiTouchHandler(surfaceView, touchEventBuffer, touchEventPool);
+
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() != 0)
+        {
+            Sensor accelerometer = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        }
+
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        SoundPool.Builder soundBuilder = new SoundPool.Builder();
+        soundBuilder.setMaxStreams(20);
+        AudioAttributes.Builder audioAttributesBuilder = new AudioAttributes.Builder();
+        audioAttributesBuilder.setUsage(AudioAttributes.USAGE_GAME);
+        AudioAttributes audioAttributes = audioAttributesBuilder.build();
+        soundBuilder.setAudioAttributes(audioAttributes);
+        soundPool = soundBuilder.build();
+
+        //this.soundPool = new SoundPool(20, AudioManager.STREAM_MUSIC, 0); //this old way of getting soundPool
+
         screen = createStartScreen();
 
         if(surfaceView.getWidth() > surfaceView.getHeight())
@@ -64,15 +92,6 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         else
         {
             setVirtualScreen(320, 480);
-        }
-        touchHandler = new MultiTouchHandler(surfaceView, touchEventBuffer, touchEventPool);
-
-        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
-        if(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() != 0)
-        {
-            Sensor accelerometer = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0);
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         }
     }
 
@@ -179,7 +198,20 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         }
     }
     //public Music loadMusic(String filename) { return null; }
-    //public Sound loadSound(String filename) { return null; }
+    public Sound loadSound(String filename)
+    {
+        try
+        {
+            AssetFileDescriptor assetFileDescriptor = getAssets().openFd(filename);
+            int soundId = soundPool.load(assetFileDescriptor, 0);
+            Sound sound = new Sound(soundId, soundPool);
+            return sound;
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException("Could not load sound from file: " + filename);
+        }
+    }
 
     public void clearFrameBuffer(int color)
     {
@@ -235,6 +267,7 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         {
             if(isFinishing())
             {
+                soundPool.release();
                 stateChanges.add(State.Disposed);
             }
             else
