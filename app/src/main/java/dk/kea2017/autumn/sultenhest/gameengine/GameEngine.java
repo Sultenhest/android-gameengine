@@ -27,6 +27,7 @@ import java.util.List;
 
 public abstract class GameEngine extends Activity implements Runnable, SensorEventListener
 {
+    private int framesPerSecond = 0;
     private Screen screen;
     private Canvas canvas;
     private Bitmap virtualScreen;
@@ -197,7 +198,20 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
             }
         }
     }
-    //public Music loadMusic(String filename) { return null; }
+
+    public Music loadMusic(String filename)
+    {
+        try
+        {
+            AssetFileDescriptor assetFileDescriptor = getAssets().openFd(filename);
+            return new Music(assetFileDescriptor);
+        }
+        catch(IOException e)
+        {
+            throw new RuntimeException("Could not load music from file: " + filename);
+        }
+    }
+
     public Sound loadSound(String filename)
     {
         try
@@ -304,6 +318,10 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
     @Override
     public void run()
     {
+        long startTime = System.nanoTime();
+        long currentTime = startTime;
+        float deltaTime = 0;
+
         while(true)
         {
             synchronized(stateChanges)
@@ -353,7 +371,10 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
                 Canvas canvas = surfaceHolder.lockCanvas();
                 //now we can do all the drawing stuff
                 fillEvents();
-                if(screen != null ) screen.update(0);
+                currentTime = System.nanoTime();
+                deltaTime = (currentTime - startTime)/1000000000.0f;
+                if (screen != null ) screen.update(deltaTime);
+                startTime = currentTime;
                 freeEvents();
                 //after the screen has made all game objects to the virtualScreen we need to copy
                 //and resize the virtualScreen to the actual physical surfaceView
@@ -370,7 +391,8 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
                 canvas.drawBitmap(virtualScreen, src, dst, null);
 
                 surfaceHolder.unlockCanvasAndPost(canvas);
-            }
-        }
-    }
+            } //end of state running
+        } //end of the while loop
+    } //end of run() method
+
 }
