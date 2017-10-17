@@ -1,5 +1,7 @@
 package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
+import dk.kea2017.autumn.sultenhest.gameengine.Paddle;
+
 public class World
 {
     public static final float MIN_X = 0;
@@ -7,8 +9,9 @@ public class World
     public static final float MIN_Y = 36;
     public static final float MAX_Y = 479;
     Ball ball = new Ball();
+    Paddle paddle = new Paddle();
 
-    public void update(float deltatime)
+    public void update(float deltatime, float accelX)
     {
         ball.x = (int)(ball.x + ball.vx * deltatime);
         ball.y = (int)(ball.y + ball.vy * deltatime);
@@ -40,5 +43,10 @@ public class World
             ball.vy = -ball.vy;
             ball.y  = (int) (MAX_Y - ball.HEIGHT);
         }
+
+        // Paddle properties
+        paddle.x = paddle.x + accelX * deltatime * 50;
+        if (paddle.x < MIN_X) paddle.x = MIN_X;
+        if (paddle.x + Paddle.WIDTH > MAX_X) paddle.x = MAX_X - Paddle.WIDTH;
     }
 }
