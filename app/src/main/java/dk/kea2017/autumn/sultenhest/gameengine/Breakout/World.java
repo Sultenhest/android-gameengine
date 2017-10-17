@@ -48,5 +48,19 @@ public class World
         paddle.x = paddle.x + accelX * deltatime * 50;
         if (paddle.x < MIN_X) paddle.x = MIN_X;
         if (paddle.x + Paddle.WIDTH > MAX_X) paddle.x = MAX_X - Paddle.WIDTH;
+
+        collideBallPaddle();
+
+    }
+
+    private void collideBallPaddle()
+    {
+        if (ball.y + Ball.HEIGHT >= paddle.y &&
+                ball.x < paddle.x + Paddle.WIDTH &&
+                ball.x + Ball.WIDTH > paddle.x)
+        {
+            ball.y = (int)paddle.y - (int)Ball.HEIGHT - 2;
+            ball.vy = -ball.vy;
+        }
     }
 }
