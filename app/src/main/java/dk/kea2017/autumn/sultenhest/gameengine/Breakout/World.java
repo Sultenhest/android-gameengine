@@ -75,7 +75,7 @@ public class World
         if (paddle.x + Paddle.WIDTH > MAX_X) paddle.x = MAX_X - Paddle.WIDTH;
 
         collideBallPaddle();
-        collideBallBlocks();
+        collideBallBlocks(deltatime);
     }
 
     private void collideBallPaddle()
@@ -89,7 +89,7 @@ public class World
         }
     }
 
-    private void collideBallBlocks()
+    private void collideBallBlocks(float deltatime)
     {
         Block block = null;
         for (int i = 0; i < blocks.size(); i++)
@@ -100,7 +100,76 @@ public class World
             {
                 blocks.remove(i);
                 i--;
+                float oldvx = ball.vx;
+                float oldvy = ball.vy;
+                reflectBall(ball, block);
+                ball.x = (int)(ball.x - oldvx * deltatime * 1.01f);
+                ball.y = (int)(ball.y - oldvy * deltatime * 1.01f);
             }
+        }
+    }
+
+    private void reflectBall(Ball ball, Block block)
+    {
+        // Check the top left corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, 1, 1))
+        {
+            if (ball.vx > 0) ball.vx = -ball.vx;
+            if (ball.vy > 0) ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check top right corner
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x - Block.WIDTH, block.y, 1, 1))
+        {
+            if (ball.vx < 0) ball.vx = -ball.vx;
+            if (ball.vy > 0) ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check the bottom left corner of the block
+        if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y + Block.HEIGHT, 1, 1))
+        {
+            if (ball.vx > 0) ball.vx = -ball.vx;
+            if (ball.vy < 0) ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check the bottom right corner of the block
+        if(collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x - Block.WIDTH, block.y + Block.HEIGHT, 1, 1))
+        {
+            if (ball.vx < 0) ball.vx = -ball.vx;
+            if (ball.vy > 0) ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check the top edge of the block
+        if(collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, Block.WIDTH, 1))
+        {
+            //if (ball.vy > 0) ball.vy = -ball.vy;
+            ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check the bottom edge of the block
+        if(collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y + Block.HEIGHT, Block.WIDTH, 1))
+        {
+            ball.vy = -ball.vy;
+            return;
+        }
+
+        // Check the left edge of the block
+        if(collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, 1, Block.HEIGHT))
+        {
+            ball.vx = -ball.vx;
+            return;
+        }
+
+        // Check the right edge of the block
+        if(collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x + Block.WIDTH, block.y, 1, Block.HEIGHT))
+        {
+            ball.vx = -ball.vx;
+            return;
         }
     }
 
