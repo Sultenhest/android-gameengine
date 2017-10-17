@@ -1,5 +1,8 @@
 package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dk.kea2017.autumn.sultenhest.gameengine.Paddle;
 
 public class World
@@ -10,6 +13,26 @@ public class World
     public static final float MAX_Y = 479;
     Ball ball = new Ball();
     Paddle paddle = new Paddle();
+    List<Block> blocks = new ArrayList<Block>();
+
+    public World()
+    {
+        generateBlocks();
+    }
+
+    private void generateBlocks()
+    {
+        blocks.clear();
+
+        for (int y = 50, type = 0; y < 50 + 8 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
+        {
+            // For each column
+            for (int x = 20; x < MAX_X - Block.WIDTH/2; x = x + (int)Block.WIDTH)
+            {
+                blocks.add(new Block(x, y, type));
+            }
+        }
+    }
 
     public void update(float deltatime, float accelX)
     {
