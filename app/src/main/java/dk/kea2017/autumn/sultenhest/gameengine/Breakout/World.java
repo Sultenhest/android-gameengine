@@ -1,5 +1,7 @@
 package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
+import android.graphics.Rect;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +75,7 @@ public class World
         if (paddle.x + Paddle.WIDTH > MAX_X) paddle.x = MAX_X - Paddle.WIDTH;
 
         collideBallPaddle();
-
+        collideBallBlocks();
     }
 
     private void collideBallPaddle()
@@ -85,5 +87,39 @@ public class World
             ball.y = (int)paddle.y - (int)Ball.HEIGHT - 2;
             ball.vy = -ball.vy;
         }
+    }
+
+    private void collideBallBlocks()
+    {
+        Block block = null;
+        for (int i = 0; i < blocks.size(); i++)
+        {
+            block = blocks.get(i);
+
+            if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, Block.WIDTH, Block.HEIGHT))
+            {
+                blocks.remove(i);
+                i--;
+            }
+        }
+    }
+
+
+    // Refactor this piece of shit
+    private boolean collideRects(float x, float y, float width, float height, float x2, float y2, float width2, float height2)
+    {
+        Rect rect1 = new Rect((int) x, (int)y, (int)x+(int)width, (int)y+(int)height);
+        Rect rect2 = new Rect((int) x2, (int)y2, (int)x2+(int)width2, (int)y2+(int)height2);
+
+        return rect1.intersect(rect2);
+
+        /*
+        // Teacher's implementation
+        if (x < x2+width2 && x + width > x2 && y + height > y2 && y < y2 + height2)
+        {
+            return true;
+        }
+        return false;
+        */
     }
 }
