@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
+import dk.kea2017.autumn.sultenhest.gameengine.GameEngine;
 import dk.kea2017.autumn.sultenhest.gameengine.Paddle;
 
 public class World
@@ -16,9 +17,11 @@ public class World
     Ball ball = new Ball();
     Paddle paddle = new Paddle();
     List<Block> blocks = new ArrayList<Block>();
+    GameEngine gameEngine;
 
-    public World()
+    public World(GameEngine gameEngine)
     {
+        this.gameEngine = gameEngine;
         generateBlocks();
     }
 
@@ -74,8 +77,22 @@ public class World
         if (paddle.x < MIN_X) paddle.x = MIN_X;
         if (paddle.x + Paddle.WIDTH > MAX_X) paddle.x = MAX_X - Paddle.WIDTH;
 
+        if(gameEngine.isTouchDown(0))
+        {
+            if(gameEngine.getTouchY(0) > 450)
+            {
+                paddle.x = gameEngine.getTouchX(0);
+            }
+        }
+
         collideBallPaddle();
         collideBallBlocks(deltatime);
+
+        //If all blocks are removed, regenerate or better: start a new level
+        if(blocks.size() == 0)
+        {
+            generateBlocks();
+        }
     }
 
     private void collideBallPaddle()

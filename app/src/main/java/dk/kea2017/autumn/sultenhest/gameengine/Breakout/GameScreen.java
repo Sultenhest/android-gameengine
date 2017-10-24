@@ -31,7 +31,7 @@ public class GameScreen extends Screen
     public GameScreen(GameEngine gameEngine)
     {
         super(gameEngine);
-        world = new World();
+        world = new World(gameEngine);
         worldRenderer = new WorldRenderer(gameEngine, world);
 
         //Bitmaps
