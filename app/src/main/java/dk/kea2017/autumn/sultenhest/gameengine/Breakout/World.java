@@ -18,6 +18,7 @@ public class World
     Paddle paddle = new Paddle();
     List<Block> blocks = new ArrayList<Block>();
     GameEngine gameEngine;
+    boolean gameOver = false;
 
     public World(GameEngine gameEngine)
     {
@@ -66,10 +67,18 @@ public class World
         }
 
         //Bottom edge
+        /*
         if(ball.y > MAX_Y - ball.HEIGHT)
         {
             ball.vy = -ball.vy;
             ball.y  = (int) (MAX_Y - ball.HEIGHT);
+        }
+        */
+        //Reset game if ball touches bottom. Naughty.
+        if(ball.y + ball.HEIGHT > MAX_Y)
+        {
+            gameOver = true;
+            return;
         }
 
         // Paddle properties

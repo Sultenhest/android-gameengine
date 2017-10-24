@@ -2,10 +2,13 @@ package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
 import android.graphics.Bitmap;
 
+import java.util.List;
+
 import dk.kea2017.autumn.sultenhest.gameengine.GameEngine;
 import dk.kea2017.autumn.sultenhest.gameengine.Music;
 import dk.kea2017.autumn.sultenhest.gameengine.Screen;
 import dk.kea2017.autumn.sultenhest.gameengine.Sound;
+import dk.kea2017.autumn.sultenhest.gameengine.TouchEvent;
 
 public class GameScreen extends Screen
 {
@@ -50,15 +53,27 @@ public class GameScreen extends Screen
     @Override
     public void update(float deltaTime)
     {
+        if(world.gameOver)
+        {
+            state = State.GameOver;
+        }
+
         if(state == State.Paused && gameEngine.getTouchEvents().size() > 0)
         {
             state = State.Running;
         }
 
-        if(state == State.GameOver && gameEngine.getTouchEvents().size() > 0)
+        if(state == State.GameOver)
         {
-            gameEngine.setScreen(new MainMenuScreen(gameEngine));
-            return;
+            List<TouchEvent> events = gameEngine.getTouchEvents();
+            for(int i = 0; i < events.size(); i++)
+            {
+                if (events.get(i).type == TouchEvent.TouchEventType.Up)
+                {
+                    gameEngine.setScreen(new MainMenuScreen(gameEngine));
+                    return;
+                }
+            }
         }
 
         if(state == State.Running && gameEngine.getTouchY(0) < 38 && gameEngine.getTouchX(0) > 280)
