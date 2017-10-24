@@ -71,7 +71,7 @@ public class GameScreen extends Screen
 
         if(state == State.Running)
         {
-            world.update(deltaTime);
+            world.update(deltaTime, gameEngine.getAccelerometer()[0]);
         }
         worldRenderer.render();
 
