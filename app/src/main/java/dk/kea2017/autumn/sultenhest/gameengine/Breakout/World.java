@@ -18,11 +18,14 @@ public class World
     Paddle paddle = new Paddle();
     List<Block> blocks = new ArrayList<Block>();
     GameEngine gameEngine;
+    CollisionListener collisionListener;
     boolean gameOver = false;
+    int points = 0;
 
-    public World(GameEngine gameEngine)
+    public World(GameEngine gameEngine, CollisionListener collisionListener)
     {
         this.gameEngine = gameEngine;
+        this.collisionListener = collisionListener;
         generateBlocks();
     }
 
@@ -50,6 +53,7 @@ public class World
         {
             ball.vx = -ball.vx;
             ball.x  = (int) MIN_X;
+            collisionListener.collisionWall();
         }
 
         //Right edge
@@ -57,6 +61,7 @@ public class World
         {
             ball.vx = -ball.vx;
             ball.x  = (int) (MAX_X - ball.WIDTH);
+            collisionListener.collisionWall();
         }
 
         //Top edge
@@ -64,6 +69,7 @@ public class World
         {
             ball.vy = -ball.vy;
             ball.y  = (int) MIN_Y;
+            collisionListener.collisionWall();
         }
 
         //Bottom edge
@@ -104,17 +110,6 @@ public class World
         }
     }
 
-    private void collideBallPaddle()
-    {
-        if (ball.y + Ball.HEIGHT >= paddle.y &&
-                ball.x < paddle.x + Paddle.WIDTH &&
-                ball.x + Ball.WIDTH > paddle.x)
-        {
-            ball.y = (int)paddle.y - (int)Ball.HEIGHT - 2;
-            ball.vy = -ball.vy;
-        }
-    }
-
     private void collideBallBlocks(float deltatime)
     {
         Block block = null;
@@ -125,12 +120,14 @@ public class World
             if (collideRects(ball.x, ball.y, Ball.WIDTH, Ball.HEIGHT, block.x, block.y, Block.WIDTH, Block.HEIGHT))
             {
                 blocks.remove(i);
+                collisionListener.collisionBlock();
                 i--;
                 float oldvx = ball.vx;
                 float oldvy = ball.vy;
                 reflectBall(ball, block);
                 ball.x = (int)(ball.x - oldvx * deltatime * 1.01f);
                 ball.y = (int)(ball.y - oldvy * deltatime * 1.01f);
+                points = points + (10 - block.type);
             }
         }
     }
@@ -216,5 +213,17 @@ public class World
         }
         return false;
         */
+    }
+
+    private void collideBallPaddle()
+    {
+        if (ball.y + Ball.HEIGHT >= paddle.y &&
+                ball.x < paddle.x + Paddle.WIDTH &&
+                ball.x + Ball.WIDTH > paddle.x)
+        {
+            collisionListener.collisionPaddle();
+            ball.y = (int)paddle.y - (int)Ball.HEIGHT - 2;
+            ball.vy = -ball.vy;
+        }
     }
 }

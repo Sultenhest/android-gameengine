@@ -1,11 +1,12 @@
 package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Typeface;
 
 import java.util.List;
 
 import dk.kea2017.autumn.sultenhest.gameengine.GameEngine;
-import dk.kea2017.autumn.sultenhest.gameengine.Music;
 import dk.kea2017.autumn.sultenhest.gameengine.Screen;
 import dk.kea2017.autumn.sultenhest.gameengine.Sound;
 import dk.kea2017.autumn.sultenhest.gameengine.TouchEvent;
@@ -21,20 +22,38 @@ public class GameScreen extends Screen
 
     World world = null;
     WorldRenderer worldRenderer = null;
+    State  state      = State.Running;
 
     Bitmap background = null;
     Bitmap resume     = null;
     Bitmap gameOver   = null;
-    State  state      = State.Running;
 
-    Music  music         = null;
-    Sound  explosion     = null;
-    Sound  gameOverSound = null;
+    Typeface font     = null;
+
+    Sound bounceSound   = null;
+    Sound blockSound    = null;
+    Sound gameOverSound = null;
 
     public GameScreen(GameEngine gameEngine)
     {
         super(gameEngine);
-        world = new World(gameEngine);
+        world = new World(gameEngine, new CollisionListener()
+        {
+            @Override
+            public void collisionWall() {
+                bounceSound.play(1);
+            }
+
+            @Override
+            public void collisionPaddle() {
+                bounceSound.play(1);
+            }
+
+            @Override
+            public void collisionBlock() {
+                blockSound.play(1);
+            }
+        } );
         worldRenderer = new WorldRenderer(gameEngine, world);
 
         //Bitmaps
@@ -42,12 +61,13 @@ public class GameScreen extends Screen
         resume = gameEngine.loadBitmap("breakout_assets/resume.png");
         gameOver = gameEngine.loadBitmap("breakout_assets/gameover.png");
 
-        //Music and Sounds
-        music = gameEngine.loadMusic("breakout_assets/music.ogg");
-        explosion = gameEngine.loadSound("breakout_assets/explosion.ogg");
+        //Init font
+        font = gameEngine.loadFont("breakout_assets/font.ttf");
+
+        //Sounds
+        bounceSound   = gameEngine.loadSound("breakout_assets/bounce.wav");
+        blockSound    = gameEngine.loadSound("breakout_assets/blocksplosion.wav");
         gameOverSound = gameEngine.loadSound("breakout_assets/gameover.wav");
-        music.setLooping(true);
-        music.play();
     }
 
     @Override
@@ -61,6 +81,7 @@ public class GameScreen extends Screen
         if(state == State.Paused && gameEngine.getTouchEvents().size() > 0)
         {
             state = State.Running;
+            resume();
         }
 
         if(state == State.GameOver)
@@ -79,6 +100,7 @@ public class GameScreen extends Screen
         if(state == State.Running && gameEngine.getTouchY(0) < 38 && gameEngine.getTouchX(0) > 280)
         {
             state = State.Paused;
+            pause();
             return;
         }
 
@@ -90,6 +112,8 @@ public class GameScreen extends Screen
         }
         worldRenderer.render();
 
+        gameEngine.drawText(font, "POINTS " + Integer.toString(world.points), 24, 24, Color.GREEN, 15);
+
         if(state == State.Paused)
         {
             gameEngine.drawBitmap(resume, 160 - (resume.getWidth() / 2), 240 - (resume.getHeight() / 2));
@@ -97,7 +121,6 @@ public class GameScreen extends Screen
 
         if(state == State.GameOver)
         {
-            gameOverSound.play(1);
             gameEngine.drawBitmap(gameOver, 160 - (gameOver.getWidth() / 2), 240 - (gameOver.getHeight() / 2));
         }
     }
@@ -106,12 +129,13 @@ public class GameScreen extends Screen
     public void pause()
     {
         if(state == State.Running) state = State.Paused;
+        gameEngine.music.pause();
     }
 
     @Override
     public void resume()
     {
-
+        gameEngine.music.play();
     }
 
     @Override

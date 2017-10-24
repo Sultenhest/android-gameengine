@@ -6,7 +6,9 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -28,11 +30,15 @@ import java.util.List;
 public abstract class GameEngine extends Activity implements Runnable, SensorEventListener
 {
     private int framesPerSecond = 0;
+
     private Screen screen;
     private Canvas canvas;
     private Bitmap virtualScreen;
     Rect src = new Rect();
     Rect dst = new Rect();
+
+    Paint paint = new Paint();
+    public Music music = null;
 
     private SoundPool soundPool;
 
@@ -272,7 +278,23 @@ public abstract class GameEngine extends Activity implements Runnable, SensorEve
         return virtualY;
     }
 
-    //public List<TouchEvent> getTouchEvents() { return null; }
+    public Typeface loadFont(String filename)
+    {
+        Typeface font = Typeface.createFromAsset(getAssets(), filename);
+        if(font == null)
+        {
+            throw new RuntimeException("Could not load font: " + filename);
+        }
+        return font;
+    }
+
+    public void drawText(Typeface font, String text, int x, int y, int color, int size)
+    {
+        paint.setTypeface(font);
+        paint.setTextSize(size);
+        paint.setColor(color); //our font in this game has a predifined color
+        canvas.drawText(text, x, y, paint);
+    }
 
     public void onPause()
     {

@@ -8,6 +8,21 @@ public class Breakout extends GameEngine
     @Override
     public Screen createStartScreen()
     {
+        music = this.loadMusic("breakout_assets/music.ogg");
         return new MainMenuScreen(this);
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        music.pause();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        music.play();
     }
 }
