@@ -29,8 +29,7 @@ public class World
 
     public World()
     {
-        Log.d("World class", "This should never happen...");
-        throw new RuntimeException("Yeah this should not have happened");
+        //empty
     }
 
     public World(GameEngine gameEngine, CollisionListener collisionListener)
@@ -44,7 +43,7 @@ public class World
     {
         blocks.clear();
 
-        for (int y = 50, type = 0; y < 50 + 1 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
+        for (int y = 50, type = 0; y < 50 + 3 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
         //for (int y = 50, type = 0; y < 50 + 8 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
         {
             // For each column

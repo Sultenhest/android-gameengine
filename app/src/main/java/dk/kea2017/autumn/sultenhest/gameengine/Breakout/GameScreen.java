@@ -3,6 +3,7 @@ package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import java.util.List;
 
@@ -85,6 +86,7 @@ public class GameScreen extends Screen
 
         if(world.levelDone)
         {
+            Log.d("GameScreen", "setScreen level 2");
             gameEngine.setScreen(new GameScreenL2(gameEngine));
             return;
         }

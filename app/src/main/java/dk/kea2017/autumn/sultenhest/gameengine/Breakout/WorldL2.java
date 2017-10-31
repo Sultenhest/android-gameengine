@@ -14,20 +14,28 @@ public class WorldL2 extends World
     public static final float MAX_X = 319;
     public static final float MIN_Y = 36;
     public static final float MAX_Y = 479;
-    Ball ball = new Ball();
-    Paddle paddle = new Paddle();
-    List<Block> blocks = new ArrayList<Block>();
+    Ball ball;
+    Paddle paddle;
+    List<Block> blocks;
     GameEngine gameEngine;
     CollisionListener collisionListener;
-    boolean gameOver = false;
-    int points = 0;
-    int lives = 3;
-    int paddleHits = 0;
-    int advance = 0;
+    boolean gameOver;
+    int points;
+    int lives;
+    int paddleHits;
+    int advance;
 
     public WorldL2(GameEngine gameEngine, CollisionListener collisionListener)
     {
         super(gameEngine, collisionListener);
+        ball = new Ball();
+        paddle = new Paddle();
+        blocks = new ArrayList<Block>();
+        gameOver = false;
+        points = 0;
+        lives = 3;
+        paddleHits = 0;
+        advance = 10;
         this.gameEngine = gameEngine;
         this.collisionListener = collisionListener;
         generateBlocks();
@@ -94,7 +102,7 @@ public class WorldL2 extends World
                 collisionListener.gameOver();
                 return;
             } else {
-                ball.y = (int) MAX_Y/2;
+                ball.y = (int) paddle.y - 5;
                 if(ball.vy > 0) ball.vy = -ball.vy;
                 collisionListener.collisionBlock();
             }
@@ -242,7 +250,7 @@ public class WorldL2 extends World
             if(paddleHits == 3) //To be adjusted for normal play
             {
                 paddleHits = 0;
-                advance = advance + 10;
+                //advance = advance + 10;
                 advanceBlocks();
             }
         }

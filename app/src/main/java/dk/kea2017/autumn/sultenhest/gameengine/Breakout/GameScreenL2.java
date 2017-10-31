@@ -20,8 +20,8 @@ public class GameScreenL2 extends Screen
         GameOver
     }
 
-    WorldL2 world = null;
-    WorldRenderer worldRenderer = null;
+    WorldL2 world2;
+    WorldRendererL2 worldRenderer;
     GameScreen.State state      = GameScreen.State.Running;
 
     //Load Level2 background
@@ -38,7 +38,7 @@ public class GameScreenL2 extends Screen
     public GameScreenL2(GameEngine gameEngine)
     {
         super(gameEngine);
-        world = new WorldL2(gameEngine, new CollisionListener()
+        world2 = new WorldL2(gameEngine, new CollisionListener()
         {
             @Override
             public void collisionWall() {
@@ -60,7 +60,7 @@ public class GameScreenL2 extends Screen
                 gameOverSound.play(1);
             }
         } );
-        worldRenderer = new WorldRenderer(gameEngine, world);
+        worldRenderer = new WorldRendererL2(gameEngine, world2);
 
         //Bitmaps
         //Load level2 bitmap
@@ -80,7 +80,7 @@ public class GameScreenL2 extends Screen
     @Override
     public void update(float deltaTime)
     {
-        if(world.gameOver)
+        if(world2.gameOver)
         {
             state = GameScreen.State.GameOver;
         }
@@ -116,11 +116,11 @@ public class GameScreenL2 extends Screen
 
         if(state == GameScreen.State.Running)
         {
-            world.update(deltaTime, gameEngine.getAccelerometer()[0]);
+            world2.update(deltaTime, gameEngine.getAccelerometer()[0]);
         }
         worldRenderer.render();
 
-        gameEngine.drawText(font, ("LIVES " + Integer.toString(world.lives) + " | POINTS" + Integer.toString(world.points)), 24, 24, Color.GREEN, 12);
+        gameEngine.drawText(font, ("LIVES " + Integer.toString(world2.lives) + " | POINTS" + Integer.toString(world2.points)), 24, 24, Color.GREEN, 12);
 
         if(state == GameScreen.State.Paused)
         {
