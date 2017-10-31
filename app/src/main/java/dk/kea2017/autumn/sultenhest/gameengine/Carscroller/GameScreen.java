@@ -1,9 +1,7 @@
-package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
+package dk.kea2017.autumn.sultenhest.gameengine.Carscroller;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
 
 import java.util.List;
 
@@ -21,18 +19,19 @@ public class GameScreen extends Screen
         GameOver
     }
 
-    World world = null;
-    WorldRenderer worldRenderer = null;
-    State  state      = State.Running;
+    World world;
+    WorldRenderer worldRenderer;
+    State state = State.Running;
 
     Bitmap background = null;
-    Bitmap resume     = null;
-    Bitmap gameOver   = null;
+    float backgroundX = 0;
+    Bitmap resume = null;
+    Bitmap gameOver = null;
 
-    Typeface font     = null;
+    //Typeface font = null;
 
-    Sound bounceSound   = null;
-    Sound blockSound    = null;
+    Sound bounceSound = null;
+    Sound blockSound = null;
     Sound gameOverSound = null;
 
     public GameScreen(GameEngine gameEngine)
@@ -46,13 +45,8 @@ public class GameScreen extends Screen
             }
 
             @Override
-            public void collisionPaddle() {
+            public void collisionMonster() {
                 bounceSound.play(1);
-            }
-
-            @Override
-            public void collisionBlock() {
-                blockSound.play(1);
             }
 
             @Override
@@ -63,17 +57,17 @@ public class GameScreen extends Screen
         worldRenderer = new WorldRenderer(gameEngine, world);
 
         //Bitmaps
-        background = gameEngine.loadBitmap("breakout_assets/background.png");
-        resume = gameEngine.loadBitmap("breakout_assets/resume.png");
-        gameOver = gameEngine.loadBitmap("breakout_assets/gameover.png");
+        background = gameEngine.loadBitmap("carscroller_assets/xcarbackground.png");
+        resume = gameEngine.loadBitmap("carscroller_assets/resume.png");
+        gameOver = gameEngine.loadBitmap("carscroller_assets/gameover.png");
 
         //Init font
-        font = gameEngine.loadFont("breakout_assets/font.ttf");
+        //font = gameEngine.loadFont("carscroller_assets/font.ttf");
 
         //Sounds
-        bounceSound   = gameEngine.loadSound("breakout_assets/bounce.wav");
-        blockSound    = gameEngine.loadSound("breakout_assets/blocksplosion.wav");
-        gameOverSound = gameEngine.loadSound("breakout_assets/gameover.wav");
+        bounceSound   = gameEngine.loadSound("carscroller_assets/bounce.wav");
+        blockSound    = gameEngine.loadSound("carscroller_assets/blocksplosion.wav");
+        gameOverSound = gameEngine.loadSound("carscroller_assets/gameover.wav");
     }
 
     @Override
@@ -82,13 +76,6 @@ public class GameScreen extends Screen
         if(world.gameOver)
         {
             state = State.GameOver;
-        }
-
-        if(world.levelDone)
-        {
-            Log.d("GameScreen", "setScreen level 2");
-            gameEngine.setScreen(new GameScreenL2(gameEngine));
-            return;
         }
 
         if(state == State.Paused && gameEngine.getTouchEvents().size() > 0)
@@ -117,24 +104,32 @@ public class GameScreen extends Screen
             return;
         }
 
-        gameEngine.drawBitmap(background, 0, 0);
+        //Scroll the background image
+        backgroundX = backgroundX + 100 * deltaTime;
+
+        if(backgroundX > 2700 - 480)
+        {
+            backgroundX = 0;
+        }
+
+        gameEngine.drawBitmap(background, 0, 0, (int) backgroundX, 0, 480, 320);
 
         if(state == State.Running)
         {
-            world.update(deltaTime, gameEngine.getAccelerometer()[0]);
+            world.update(deltaTime, gameEngine.getAccelerometer()[1]);
         }
         worldRenderer.render();
 
-        gameEngine.drawText(font, ("LIVES " + Integer.toString(world.lives) + " | POINTS" + Integer.toString(world.points)), 24, 24, Color.GREEN, 12);
+        //gameEngine.drawText(font, ("LIVES " + Integer.toString(world.lives) + " | POINTS" + Integer.toString(world.points)), 24, 24, Color.GREEN, 12);
 
         if(state == State.Paused)
         {
-            gameEngine.drawBitmap(resume, 160 - (resume.getWidth() / 2), 240 - (resume.getHeight() / 2));
+            gameEngine.drawBitmap(resume, 240 - (resume.getWidth() / 2), 160 - (resume.getHeight() / 2));
         }
 
         if(state == State.GameOver)
         {
-            gameEngine.drawBitmap(gameOver, 160 - (gameOver.getWidth() / 2), 240 - (gameOver.getHeight() / 2));
+            gameEngine.drawBitmap(gameOver, 240 - (gameOver.getWidth() / 2), 160 - (gameOver.getHeight() / 2));
         }
     }
 
