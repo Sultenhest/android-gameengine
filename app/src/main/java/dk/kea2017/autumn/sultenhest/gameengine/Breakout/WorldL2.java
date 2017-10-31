@@ -1,7 +1,6 @@
 package dk.kea2017.autumn.sultenhest.gameengine.Breakout;
 
 import android.graphics.Rect;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,7 @@ import java.util.List;
 import dk.kea2017.autumn.sultenhest.gameengine.GameEngine;
 import dk.kea2017.autumn.sultenhest.gameengine.Paddle;
 
-public class World
+public class WorldL2 extends World
 {
     public static final float MIN_X = 0;
     public static final float MAX_X = 319;
@@ -25,16 +24,10 @@ public class World
     int lives = 3;
     int paddleHits = 0;
     int advance = 0;
-    boolean levelDone = false;
 
-    public World()
+    public WorldL2(GameEngine gameEngine, CollisionListener collisionListener)
     {
-        Log.d("World class", "This should never happen...");
-        throw new RuntimeException("Yeah this should not have happened");
-    }
-
-    public World(GameEngine gameEngine, CollisionListener collisionListener)
-    {
+        super(gameEngine, collisionListener);
         this.gameEngine = gameEngine;
         this.collisionListener = collisionListener;
         generateBlocks();
@@ -44,8 +37,7 @@ public class World
     {
         blocks.clear();
 
-        for (int y = 50, type = 0; y < 50 + 1 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
-        //for (int y = 50, type = 0; y < 50 + 8 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
+        for (int y = 50, type = 0; y < 50 + 8 * Block.HEIGHT; y = y + (int)Block.HEIGHT, type++)
         {
             // For each column
             for (int x = 20; x < MAX_X - Block.WIDTH/2; x = x + (int)Block.WIDTH)
@@ -127,8 +119,7 @@ public class World
         //If all blocks are removed, regenerate or better: start a new level
         if(blocks.size() == 0)
         {
-            levelDone = true;
-            //generateBlocks();
+            generateBlocks();
         }
     }
 
@@ -251,7 +242,7 @@ public class World
             if(paddleHits == 3) //To be adjusted for normal play
             {
                 paddleHits = 0;
-                advance = 10;
+                advance = advance + 10;
                 advanceBlocks();
             }
         }
