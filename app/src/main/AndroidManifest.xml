@@ -11,7 +11,9 @@
         android:theme="@style/AppTheme">
         <!--<activity android:name=".TestGame">-->
         <!--<activity android:name=".Breakout.Breakout">-->
-        <activity android:name=".Carscroller.Carscroller">
+        <activity android:name=".Carscroller.Carscroller"
+                  android:configChanges="keyboard|keyboardHidden|orientation"
+                  android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

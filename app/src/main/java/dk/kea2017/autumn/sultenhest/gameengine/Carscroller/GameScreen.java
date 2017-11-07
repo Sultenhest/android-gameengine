@@ -104,18 +104,18 @@ public class GameScreen extends Screen
             return;
         }
 
-        //Scroll the background image
-        backgroundX = backgroundX + 100 * deltaTime;
-
-        if(backgroundX > 2700 - 480)
-        {
-            backgroundX = 0;
-        }
-
-        gameEngine.drawBitmap(background, 0, 0, (int) backgroundX, 0, 480, 320);
-
         if(state == State.Running)
         {
+            //Scroll the background image when game is running
+            backgroundX = backgroundX + 100 * deltaTime;
+
+            if (backgroundX > 2700 - 480) {
+                backgroundX = 0;
+            }
+
+            gameEngine.drawBitmap(background, 0, 0, (int) backgroundX, 0, 480, 320);
+
+            //world.update(deltaTime, gameEngine.getAccelerometer()[0]);
             world.update(deltaTime, gameEngine.getAccelerometer()[1]);
         }
         worldRenderer.render();

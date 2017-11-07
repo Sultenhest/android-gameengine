@@ -10,6 +10,7 @@ public class WorldRenderer
     World world;
 
     Bitmap carImage;
+    Bitmap monsterImage;
 
     public WorldRenderer(GameEngine gameEngine, World world)
     {
@@ -17,10 +18,16 @@ public class WorldRenderer
         this.world = world;
 
         carImage = gameEngine.loadBitmap("carscroller_assets/xbluecar2.png");
+        monsterImage = gameEngine.loadBitmap("carscroller_assets/xyellowmonster2.png");
     }
 
     public void render()
     {
         gameEngine.drawBitmap(carImage, world.car.x, world.car.y);
+
+        for(int i = 0; i < world.maxMonsters; i++)
+        {
+            gameEngine.drawBitmap(monsterImage, world.monsterList.get(i).x, world.monsterList.get(i).y);
+        }
     }
 }
